@@ -1,12 +1,13 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 
 public class AudioManager : MonoBehaviour
 {
+    [SerializeField] AudioMixer mixer;          // 오디오 믹서.
+    [SerializeField] Image volumnImage;         // 볼륨 이미지.
     [SerializeField] AudioSource audioSource;   // 소리를 내는 스피커.
     [SerializeField] TMP_Text currentTimeText;  // 현재 시간 텍스트.
     [SerializeField] TMP_Text maxTimeText;      // 전체 시간 텍스트.
@@ -35,6 +36,36 @@ public class AudioManager : MonoBehaviour
             if(audioSource.time >= audioSource.clip.length)                 // 노래가 끝났다.                
                 OnMoveMusic(true);                                          // 다음 노래 재생.
         }
+
+        if(Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            float volumn = 0f;
+            mixer.GetFloat("Bgm", out volumn);
+            if (volumn <= -80f)
+                volumn = -20f;
+
+            volumn = Mathf.Clamp(volumn + 2f, -20f, 0f);
+            volumnImage.fillAmount = (20 + volumn) / 20f;
+
+            mixer.SetFloat("Bgm", volumn);
+        }
+        else if(Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            float volumn = 0f;
+            mixer.GetFloat("Bgm", out volumn);
+
+
+            // 조절한 볼륨을 이용해 볼륨바를 움직인다.
+            volumn = Mathf.Clamp(volumn - 2f, -20f, 0f);
+            volumnImage.fillAmount = (20 + volumn) / 20f;
+
+            // 볼륨을 내리다 -20이하가 되면 -80으로 고정한다.
+            if (volumn <= -20f)
+                volumn = -80f;
+
+            mixer.SetFloat("Bgm", volumn);
+        }
+
     }
     public void OnChangedAudioTime(Slider slider)
     {
